@@ -12,7 +12,10 @@
   let { imageSrc = null, labelDataSet = null, onLabelBoxClick, onBoxSelectAnimate = true, selectedLabelBox = null }: IImageContainerProps = $props();
   let canvas = $state<HTMLCanvasElement | null>(null);
   //let selectedLabelBox = $state<{ x0: number, y0: number, x1: number, y1: number } | null>(null);
-  let dashOffset = 0;
+  let dashPhase = 0;
+  const dashSpeed = 0.5; // Adjust for smoother animation
+  let firstRenderDone = false;
+
   let animationFrameId: number | null = null;
 
   function drawRectangles(ctx: CanvasRenderingContext2D) {
@@ -43,34 +46,55 @@
   function animateDashedRectangle(ctx: CanvasRenderingContext2D) {
     if (!canvas || !selectedLabelBox || !onBoxSelectAnimate) return;
 
-    const img = new Image();
-    img.src = imageSrc!;
-    img.onload = () => {
-      if (!canvas) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      
-      ctx.strokeStyle = "red";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([]);
-      
-      labelDataSet?.forEach(({ x0, y0, x1, y1 }) => {
+    // Ensure the base image and static rectangles are drawn only once
+    if (!firstRenderDone) {
+      const img = new Image();
+      img.src = imageSrc!;
+      img.onload = () => {
+        if (!canvas) return;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Draw static bounding boxes
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([]);
+        labelDataSet?.forEach(({ x0, y0, x1, y1 }) => {
+          ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+        });
+        firstRenderDone = true;
+      };
+    } else {
+      // Instead of clearing everything, only redraw the selected bounding box
+      const img = new Image();
+      img.src = imageSrc!;
+      img.onload = () => {
+        if (!canvas) return;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Draw static bounding boxes again
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([]);
+        labelDataSet?.forEach(({ x0, y0, x1, y1 }) => {
+            ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+        });
+        // Animate only the selected bounding box
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 6]);
+        ctx.lineDashOffset = -dashPhase;
+        const { x0, y0, x1, y1 } = selectedLabelBox!;
         ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
-      });
+      };
+    }
 
-      // Dashed animation for selected box
-      ctx.setLineDash([6, 6]);
-      ctx.lineDashOffset = dashOffset;
-      ctx.strokeStyle = "blue";
+    dashPhase = (dashPhase + dashSpeed) % 12; // Creates smooth animation loop
+    animationFrameId = requestAnimationFrame(() => animateDashedRectangle(ctx));
+  }
 
-      const { x0, y0, x1, y1 } = selectedLabelBox!;
-      ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
-
-      dashOffset -= -0.5; //Reduce for slower animation
-      if (dashOffset < -12) dashOffset = 0;
-
-      animationFrameId = requestAnimationFrame(() => animateDashedRectangle(ctx));
-    };
+  function stopAnimation() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
   }
 
   function renderImage() {
@@ -99,23 +123,22 @@
     for (const eachLabel of labelDataSet) {
       const { x0, y0, x1, y1 } = eachLabel;
       if (clickX >= x0 && clickX <= x1 && clickY >= y0 && clickY <= y1) {
-        clickedRect = eachLabel;
-        break;
+          clickedRect = eachLabel;
+          break;
       }
     }
+
     if (clickedRect) {
-      if (selectedLabelBox !== clickedRect) {
-        selectedLabelBox = clickedRect;
-        if (animationFrameId) cancelAnimationFrame(animationFrameId);
-        const ctx = canvas.getContext("2d");
-        if (ctx) animateDashedRectangle(ctx);
-        onLabelBoxClick && onLabelBoxClick(clickedRect); // Call the parent-provided callback function
-      }
+      selectedLabelBox = clickedRect;
+      stopAnimation();
+      const ctx = canvas.getContext("2d");
+      if (ctx) animateDashedRectangle(ctx);
+      onLabelBoxClick && onLabelBoxClick(clickedRect);
     } else {
       selectedLabelBox = null;
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      stopAnimation();
       const ctx = canvas.getContext("2d");
-      if (ctx) drawRectangles(ctx);
+      if (ctx) drawRectangles(ctx); // Redraw without animation
     }
   }
 
