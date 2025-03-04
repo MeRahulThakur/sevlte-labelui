@@ -7,7 +7,8 @@
   const state = $state({
     imageSrc: null as string | null,
     selectedFile: null as File | null,
-    labelDataSet: [] as { x0: number, y0: number, x1: number, y1: number }[]
+    labelDataSet: [] as { x0: number, y0: number, x1: number, y1: number }[],
+    selectedLabelBox: null as { x0: number, y0: number, x1: number, y1: number } | null 
   });
 
   function previewImage(event: Event) {
@@ -54,7 +55,7 @@
       state.imageSrc = result.imageUrl; // Assuming API returns an image URL*/
       state.imageSrc = "https://www.howardsgroup.co.uk/assets/media/evolutionofthecar_1.jpg"
       // Simulating received rectangle data from response
-      state.labelDataSet = getRandomDataSet(4);
+      state.labelDataSet = getRandomDataSet(20);
     } catch (error) {
       console.error("Error uploading image:", error);
       alert("Upload failed. Please try again.");
@@ -62,7 +63,8 @@
   }
 
   function handleLabelBoxClick(box: { x0: number, y0: number, x1: number, y1: number }){
-    console.log('clicked box-', box)
+    console.log('selectedLabelBox',box)
+    state.selectedLabelBox = box
   }
 </script>
 
@@ -86,9 +88,18 @@
 <Header isSticky onUpload={previewImage} onUploadClick={uploadImage} />
 
 <main class="main">
-  <ImageContainer imageSrc={state.imageSrc} labelDataSet={state.labelDataSet.length>0?state.labelDataSet:null} onLabelBoxClick={handleLabelBoxClick} --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)" />
+  <ImageContainer
+   imageSrc={state.imageSrc}
+   labelDataSet={state.labelDataSet.length>0?state.labelDataSet:null}
+   onLabelBoxClick={handleLabelBoxClick}
+   --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)"
+  />
   <!-- {--dynamic-height="calc(100dvh - 4.5rem - 4.5rem)" } -->
-  <DataTable />
+  <DataTable
+   labelDataSet={state.labelDataSet}
+   selectedLabelBox={state.selectedLabelBox}
+   --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)"
+  />
 </main>
 
 <Footer isSticky={true} />
