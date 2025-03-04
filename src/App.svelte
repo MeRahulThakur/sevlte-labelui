@@ -6,7 +6,8 @@
 
   const state = $state({
     imageSrc: null as string | null,
-    selectedFile: null as File | null
+    selectedFile: null as File | null,
+    labelDataSet: [] as { x0: number, y0: number, x1: number, y1: number }[]
   });
 
   function previewImage(event: Event) {
@@ -20,6 +21,16 @@
     }
   }
 
+  function getRandomDataSet(count: number): { x0: number, y0: number, x1: number, y1: number }[] {
+    return Array.from({ length: count }, () => {
+      const x0 = Math.floor(Math.random() * 400);
+      const y0 = Math.floor(Math.random() * 400);
+      const x1 = x0 + Math.floor(Math.random() * 100) + 20;
+      const y1 = y0 + Math.floor(Math.random() * 100) + 20;
+      return { x0, y0, x1, y1 };
+    });
+  }
+
   async function uploadImage() {
     if (!state.selectedFile) {
       alert("Please select an image first.");
@@ -30,7 +41,7 @@
     formData.append("file", state.selectedFile);
 
     try {
-      const response = await fetch("https://your-api-endpoint.com/upload", {
+      /*const response = await fetch("https://your-api-endpoint.com/upload", {
         method: "POST",
         body: formData,
       });
@@ -40,7 +51,10 @@
       }
 
       const result = await response.json();
-      state.imageSrc = result.imageUrl; // Assuming API returns an image URL
+      state.imageSrc = result.imageUrl; // Assuming API returns an image URL*/
+      state.imageSrc = "https://www.howardsgroup.co.uk/assets/media/evolutionofthecar_1.jpg"
+      // Simulating received rectangle data from response
+      state.labelDataSet = getRandomDataSet(4);
     } catch (error) {
       console.error("Error uploading image:", error);
       alert("Upload failed. Please try again.");
@@ -68,7 +82,8 @@
 <Header isSticky onUpload={previewImage} onUploadClick={uploadImage} />
 
 <main class="main">
-  <ImageContainer imageSrc={state.imageSrc} />
+  <ImageContainer imageSrc={state.imageSrc} labelDataSet={state.labelDataSet.length>0?state.labelDataSet:null} --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)" />
+  <!-- {--dynamic-height="calc(100dvh - 4.5rem - 4.5rem)" } -->
   <DataTable />
 </main>
 
