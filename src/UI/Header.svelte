@@ -1,9 +1,10 @@
 <script lang="ts">
   interface IHeader {
+    isSticky?:boolean;
     onUpload: (event: Event) => void;
   }
 
-  let {onUpload}: IHeader = $props();
+  let {onUpload, isSticky = false}: IHeader = $props();
   let fileName = $state<string>("Choose Image");
    
   function handleFileChange(event: Event) {
@@ -27,6 +28,15 @@
       padding: 10px;
       background: #333;
       color: white;
+      width: 100%;
+      height: 4.5rem;
+  }
+
+  .sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
   }
 
   .left {
@@ -61,7 +71,7 @@
   }
 </style>
 
-<header class="header">
+<header class="header {isSticky ? 'sticky' : ''}">
   <div class="left">
       <img src="logo.png" alt="Logo" width="40">
       <h1>Site Title</h1>

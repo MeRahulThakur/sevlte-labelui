@@ -26,6 +26,7 @@
         gap: 10px;
         padding: 10px;
         flex: 1;
+        margin-top: 5rem;
     }
 
     @media (max-width: 768px) {
@@ -35,7 +36,7 @@
     }
 </style>
 
-<Header onUpload={previewImage} />
+<Header isSticky onUpload={previewImage} />
 
 <main class="main">
     <ImageContainer imageSrc={state.imageSrc} />
