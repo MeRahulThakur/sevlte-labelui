@@ -6,11 +6,12 @@
     labelDataSet?: { x0: number, y0: number, x1: number, y1: number }[] | null;
     onLabelBoxClick?: (rect: { x0: number, y0: number, x1: number, y1: number }) => void;
     onBoxSelectAnimate?: boolean;
+    selectedLabelBox?: { x0: number, y0: number, x1: number, y1: number } | null;
   }
 
-  let { imageSrc = null, labelDataSet = null, onLabelBoxClick, onBoxSelectAnimate = false }: IImageContainerProps = $props();
+  let { imageSrc = null, labelDataSet = null, onLabelBoxClick, onBoxSelectAnimate = true, selectedLabelBox = null }: IImageContainerProps = $props();
   let canvas = $state<HTMLCanvasElement | null>(null);
-  let selectedLabelBox = $state<{ x0: number, y0: number, x1: number, y1: number } | null>(null);
+  //let selectedLabelBox = $state<{ x0: number, y0: number, x1: number, y1: number } | null>(null);
   let dashOffset = 0;
   let animationFrameId: number | null = null;
 
@@ -127,6 +128,18 @@
   $effect(() => {
     if (imageSrc && labelDataSet) {
       renderImage();
+    }
+  });
+
+  $effect(() => {
+    if (selectedLabelBox) {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      const ctx = canvas?.getContext("2d");
+      if (ctx) {
+        animateDashedRectangle(ctx);
+      }
     }
   });
 </script>

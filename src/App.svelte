@@ -66,6 +66,11 @@
     console.log('selectedLabelBox',box)
     state.selectedLabelBox = box
   }
+
+  function handleRowSelect(box: { x0: number, y0: number, x1: number, y1: number }) {
+    console.log('handleRowSelect',box)
+    state.selectedLabelBox = box;
+  }
 </script>
 
 <style>
@@ -92,12 +97,14 @@
    imageSrc={state.imageSrc}
    labelDataSet={state.labelDataSet.length>0?state.labelDataSet:null}
    onLabelBoxClick={handleLabelBoxClick}
+   selectedLabelBox={state.selectedLabelBox}
    --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)"
   />
   <!-- {--dynamic-height="calc(100dvh - 4.5rem - 4.5rem)" } -->
   <DataTable
    labelDataSet={state.labelDataSet}
    selectedLabelBox={state.selectedLabelBox}
+   onRowSelect={handleRowSelect}
    --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)"
   />
 </main>

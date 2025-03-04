@@ -2,9 +2,10 @@
   interface IDataTableProps {
     labelDataSet?: { x0: number, y0: number, x1: number, y1: number }[] | null;
     selectedLabelBox?: { x0: number, y0: number, x1: number, y1: number } | null;
+    onRowSelect?: (label: { x0: number, y0: number, x1: number, y1: number }) => void;
   }
 
-  let { labelDataSet = null, selectedLabelBox = null }: IDataTableProps = $props();
+  let { labelDataSet = null, selectedLabelBox = null, onRowSelect}: IDataTableProps = $props();
 
   // Auto-scroll to the selected row when selectedRect changes
   $effect(() => {
@@ -81,6 +82,7 @@
         <tr 
           data-x0={x0} data-y0={y0} data-x1={x1} data-y1={y1}
           class:selected={selectedLabelBox && selectedLabelBox.x0 === x0 && selectedLabelBox.y0 === y0 && selectedLabelBox.x1 === x1 && selectedLabelBox.y1 === y1}
+          onclick={() => onRowSelect && onRowSelect({ x0, y0, x1, y1 })}
         >
           <td>({x0}, {y0})</td>
           <td>({x1}, {y1})</td>
