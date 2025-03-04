@@ -2,9 +2,10 @@
   interface IHeader {
     isSticky?:boolean;
     onUpload: (event: Event) => void;
+    onUploadClick: () => {}
   }
 
-  let {onUpload, isSticky = false}: IHeader = $props();
+  let {onUpload,onUploadClick, isSticky = false}: IHeader = $props();
   let fileName = $state<string>("Choose Image");
    
   function handleFileChange(event: Event) {
@@ -79,6 +80,6 @@
   <div class="center">
       <label for="fileInput">{fileName}</label>
       <input type="file" id="fileInput" accept="image/*" onchange={handleFileChange}>
-      <button>Upload</button>
+      <button onclick={onUploadClick}>Upload</button>
   </div>
 </header>
