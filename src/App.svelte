@@ -60,6 +60,10 @@
       alert("Upload failed. Please try again.");
     }
   }
+
+  function handleLabelBoxClick(box: { x0: number, y0: number, x1: number, y1: number }){
+    console.log('clicked box-', box)
+  }
 </script>
 
 <style>
@@ -82,7 +86,7 @@
 <Header isSticky onUpload={previewImage} onUploadClick={uploadImage} />
 
 <main class="main">
-  <ImageContainer imageSrc={state.imageSrc} labelDataSet={state.labelDataSet.length>0?state.labelDataSet:null} --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)" />
+  <ImageContainer imageSrc={state.imageSrc} labelDataSet={state.labelDataSet.length>0?state.labelDataSet:null} onLabelBoxClick={handleLabelBoxClick} --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)" />
   <!-- {--dynamic-height="calc(100dvh - 4.5rem - 4.5rem)" } -->
   <DataTable />
 </main>
