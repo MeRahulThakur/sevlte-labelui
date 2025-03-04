@@ -74,12 +74,12 @@
 
 <header class="header {isSticky ? 'sticky' : ''}">
   <div class="left">
-      <img src="logo.png" alt="Logo" width="40">
-      <h1>Site Title</h1>
+    <img src="logo.png" alt="Logo" width="40">
+    <h1>Site Title</h1>
   </div>
   <div class="center">
-      <label for="fileInput">{fileName}</label>
-      <input type="file" id="fileInput" accept="image/*" onchange={handleFileChange}>
-      <button onclick={onUploadClick}>Upload</button>
+    <label for="fileInput">{fileName}</label>
+    <input type="file" id="fileInput" accept="image/*" onchange={handleFileChange}>
+    <button onclick={onUploadClick}>Upload</button>
   </div>
 </header>

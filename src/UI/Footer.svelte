@@ -7,17 +7,17 @@
 
 <style>
   .footer {
-      background: #333;
-      color: white;
-      text-align: center;
-      padding: 10px;
-      width: 100%;
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    width: 100%;
   }
 
   .sticky {
-      position: fixed;
-      bottom: 0;
-      left: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
   }
 </style>
 
