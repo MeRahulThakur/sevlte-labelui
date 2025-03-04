@@ -85,7 +85,7 @@
   }
 </style>
 
-<Header isSticky onUpload={previewImage} onUploadClick={uploadImage} />
+<Header isSticky onUpload={previewImage} onUploadClick={uploadImage} resetLabelDataSet={() => (state.labelDataSet = [])} />
 
 <main class="main">
   <ImageContainer

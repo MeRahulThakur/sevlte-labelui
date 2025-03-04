@@ -2,10 +2,11 @@
   interface IHeader {
     isSticky?:boolean;
     onUpload: (event: Event) => void;
-    onUploadClick: () => {}
+    onUploadClick: () => {},
+    resetLabelDataSet: () => void;
   }
 
-  let {onUpload,onUploadClick, isSticky = false}: IHeader = $props();
+  let {onUpload, onUploadClick, resetLabelDataSet, isSticky = false, }: IHeader = $props();
   let fileName = $state<string>("Choose Image");
    
   function handleFileChange(event: Event) {
@@ -14,6 +15,7 @@
 
     if (file) {
       fileName = file.name; // Store the selected file name
+      resetLabelDataSet(); // Reset label data set
       if (onUpload) {
         onUpload(event);
       }
