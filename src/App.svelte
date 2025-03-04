@@ -2,6 +2,7 @@
     import Header from './UI/Header.svelte';
     import ImageContainer from './components/ImageContainer.svelte';
     import DataTable from './components/DataTable.svelte';
+    import Footer from './UI/Footer.svelte';
 
     const state = $state({
         imageSrc: null as string | null
@@ -40,3 +41,5 @@
     <ImageContainer imageSrc={state.imageSrc} />
     <DataTable />
 </main>
+
+<Footer isSticky={true} />
