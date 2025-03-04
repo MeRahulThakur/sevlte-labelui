@@ -57,6 +57,10 @@
     top: 0;
   }
 
+  .no-data-message {
+    align-self: center;
+  }
+
   .selected {
     background-color: #e3aa47;
     font-weight: bold;
@@ -85,6 +89,6 @@
     </tbody>
   </table>
   {:else}
-    <p>No data available</p>
+    <p class="no-data-message">No data available</p>
   {/if}
 </div>

@@ -74,7 +74,7 @@
 
 <header class="header {isSticky ? 'sticky' : ''}">
   <div class="left">
-    <img src="logo.png" alt="Logo" width="40">
+    <img src="vite.svg" alt="Logo" width="40">
     <h1>Site Title</h1>
   </div>
   <div class="center">
