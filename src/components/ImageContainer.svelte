@@ -9,15 +9,14 @@
     selectLabelBoxes?: { mappingKey: string, x0: number, y0: number, x1: number, y1: number }[] | null;
   }
 
-  let { imageSrc = null, labelDataSet = null, onLabelBoxClick, onBoxSelectAnimate = true, selectLabelBoxes = [] }: IImageContainerProps = $props();
+  let { imageSrc = null, labelDataSet = null, onLabelBoxClick, onBoxSelectAnimate = false, selectLabelBoxes = [] }: IImageContainerProps = $props();
   let canvas = $state<HTMLCanvasElement | null>(null);
   let dashPhase = 0;
   const dashSpeed = 0.5;
   let firstRenderDone = false;
-
   let animationFrameId: number | null = null;
 
-  function drawRectangles(ctx: CanvasRenderingContext2D) {
+  function drawImageWithRectangles(ctx: CanvasRenderingContext2D, dashed = false) {
     if (!canvas || !imageSrc) return;
 
     const img = new Image();
@@ -35,8 +34,14 @@
         ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
       });
 
-      if (selectLabelBoxes?.length && onBoxSelectAnimate) {
-        animateDashedRectangles(ctx);
+      if (dashed && selectLabelBoxes?.length) {
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 6]);
+        ctx.lineDashOffset = -dashPhase;
+        selectLabelBoxes.forEach(({ x0, y0, x1, y1 }) => {
+          ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+        });
       }
     };
   }
@@ -45,41 +50,10 @@
     if (!canvas || selectLabelBoxes?.length === 0 || !onBoxSelectAnimate) return;
 
     if (!firstRenderDone) {
-      const img = new Image();
-      img.src = imageSrc!;
-      img.onload = () => {
-        if (!canvas) return;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([]);
-        labelDataSet?.forEach(({ x0, y0, x1, y1 }) => {
-          ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
-        });
-        firstRenderDone = true;
-      };
+      drawImageWithRectangles(ctx);
+      firstRenderDone = true;
     } else {
-      const img = new Image();
-      img.src = imageSrc!;
-      img.onload = () => {
-        if (!canvas) return;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([]);
-        labelDataSet?.forEach(({ x0, y0, x1, y1 }) => {
-          ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
-        });
-        
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth = 3;
-        ctx.setLineDash([6, 6]);
-        ctx.lineDashOffset = -dashPhase;
-
-        selectLabelBoxes?.forEach(({ x0, y0, x1, y1 }) => {
-          ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
-        });
-      };
+      drawImageWithRectangles(ctx, true);
     }
 
     dashPhase = (dashPhase + dashSpeed) % 12;
@@ -105,7 +79,7 @@
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
-      drawRectangles(ctx);
+      drawImageWithRectangles(ctx);
     };
   }
 
@@ -119,17 +93,18 @@
       clickX >= x0 && clickX <= x1 && clickY >= y0 && clickY <= y1
     );
 
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     if (clickedRects.length > 0) {
       selectLabelBoxes = clickedRects;
       stopAnimation();
-      const ctx = canvas.getContext("2d");
-      if (ctx) animateDashedRectangles(ctx);
+      animateDashedRectangles(ctx);
       onLabelBoxClick && onLabelBoxClick(clickedRects[0]);
     } else {
       selectLabelBoxes = [];
       stopAnimation();
-      const ctx = canvas.getContext("2d");
-      if (ctx) drawRectangles(ctx);
+      drawImageWithRectangles(ctx);
     }
   }
 
@@ -167,7 +142,6 @@
     height: 100%;
     overflow: hidden;
   }
-
   .image-container {
     overflow: auto;
     height: var(--dynamic-height, auto);
