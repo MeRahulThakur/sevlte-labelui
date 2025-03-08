@@ -11,9 +11,9 @@
     AllCommunityModule,
     createGrid,
     type RowStyle,
+    //provideGlobalGridOptions,
+    themeQuartz,
   } from "ag-grid-community";
-  import "ag-grid-community/styles/ag-grid.css";
-  import "ag-grid-community/styles/ag-theme-alpine.css";
 
   interface IRow { 
     mappingKey: string;
@@ -23,6 +23,9 @@
 
   // Register the required module
   ModuleRegistry.registerModules([AllCommunityModule]);
+  // Mark all grids as using legacy themes
+  //provideGlobalGridOptions({ theme: "legacy" });
+  const myTheme = themeQuartz.withParams({ accentColor: 'red' });
 
   interface IDataTableProps {
     recordsDataSet?: IRow[] | null;
@@ -35,6 +38,7 @@
   let gridElement: HTMLDivElement | null = null;
 
   let gridOptions: GridOptions<IRow> = {
+    theme: myTheme,
     defaultColDef: {
       sortable: true,
       filter: true,
