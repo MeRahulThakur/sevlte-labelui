@@ -34,11 +34,19 @@
         ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
       });
 
-      if (dashed && selectLabelBoxes?.length) {
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth = 3;
-        ctx.setLineDash([6, 6]);
-        ctx.lineDashOffset = -dashPhase;
+      if (selectLabelBoxes?.length) {
+        if (dashed) {
+          // Animate selected boxes
+          ctx.strokeStyle = "blue";
+          ctx.lineWidth = 3;
+          ctx.setLineDash([6, 6]);
+          ctx.lineDashOffset = -dashPhase;
+        } else {
+          // Static highlight (if animation is off)
+          ctx.strokeStyle = "green";
+          ctx.lineWidth = 3;
+          ctx.setLineDash([]); // Solid line
+        }
         selectLabelBoxes.forEach(({ x0, y0, x1, y1 }) => {
           ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
         });
@@ -99,7 +107,11 @@
     if (clickedRects.length > 0) {
       selectLabelBoxes = clickedRects;
       stopAnimation();
-      animateDashedRectangles(ctx);
+      if (onBoxSelectAnimate) {
+        animateDashedRectangles(ctx);
+      } else {
+        drawImageWithRectangles(ctx, false); // Ensure static highlight is drawn
+      }
       onLabelBoxClick && onLabelBoxClick(clickedRects[0]);
     } else {
       selectLabelBoxes = [];
@@ -122,14 +134,16 @@
 
   $effect(() => {
     if (selectLabelBoxes && selectLabelBoxes.length > 0) {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-      const ctx = canvas?.getContext("2d");
-      if (ctx) {
+    stopAnimation();
+    const ctx = canvas?.getContext("2d");
+    if (ctx) {
+      if (onBoxSelectAnimate) {
         animateDashedRectangles(ctx);
+      } else {
+        drawImageWithRectangles(ctx, false);
       }
     }
+  }
   });
 </script>
 
