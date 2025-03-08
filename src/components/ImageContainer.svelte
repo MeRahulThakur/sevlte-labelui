@@ -3,17 +3,16 @@
 
   interface IImageContainerProps {
     imageSrc?: string | null;
-    labelDataSet?: { x0: number, y0: number, x1: number, y1: number }[] | null;
-    onLabelBoxClick?: (rect: { x0: number, y0: number, x1: number, y1: number }) => void;
+    labelDataSet?: { mappingKey: string, x0: number, y0: number, x1: number, y1: number }[] | null;
+    onLabelBoxClick?: (rects: { mappingKey: string, x0: number, y0: number, x1: number, y1: number }) => void;
     onBoxSelectAnimate?: boolean;
-    selectedLabelBox?: { x0: number, y0: number, x1: number, y1: number } | null;
+    selectLabelBoxes?: { mappingKey: string, x0: number, y0: number, x1: number, y1: number }[] | null;
   }
 
-  let { imageSrc = null, labelDataSet = null, onLabelBoxClick, onBoxSelectAnimate = true, selectedLabelBox = null }: IImageContainerProps = $props();
+  let { imageSrc = null, labelDataSet = null, onLabelBoxClick, onBoxSelectAnimate = true, selectLabelBoxes = [] }: IImageContainerProps = $props();
   let canvas = $state<HTMLCanvasElement | null>(null);
-  //let selectedLabelBox = $state<{ x0: number, y0: number, x1: number, y1: number } | null>(null);
   let dashPhase = 0;
-  const dashSpeed = 0.5; // Adjust for smoother animation
+  const dashSpeed = 0.5;
   let firstRenderDone = false;
 
   let animationFrameId: number | null = null;
@@ -36,24 +35,21 @@
         ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
       });
 
-      // Keep selected rectangle highlighted with animation
-      if (selectedLabelBox && onBoxSelectAnimate) {
-        animateDashedRectangle(ctx);
+      if (selectLabelBoxes?.length && onBoxSelectAnimate) {
+        animateDashedRectangles(ctx);
       }
     };
   }
 
-  function animateDashedRectangle(ctx: CanvasRenderingContext2D) {
-    if (!canvas || !selectedLabelBox || !onBoxSelectAnimate) return;
+  function animateDashedRectangles(ctx: CanvasRenderingContext2D) {
+    if (!canvas || selectLabelBoxes?.length === 0 || !onBoxSelectAnimate) return;
 
-    // Ensure the base image and static rectangles are drawn only once
     if (!firstRenderDone) {
       const img = new Image();
       img.src = imageSrc!;
       img.onload = () => {
         if (!canvas) return;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        // Draw static bounding boxes
         ctx.strokeStyle = "red";
         ctx.lineWidth = 2;
         ctx.setLineDash([]);
@@ -63,31 +59,31 @@
         firstRenderDone = true;
       };
     } else {
-      // Instead of clearing everything, only redraw the selected bounding box
       const img = new Image();
       img.src = imageSrc!;
       img.onload = () => {
         if (!canvas) return;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        // Draw static bounding boxes again
         ctx.strokeStyle = "red";
         ctx.lineWidth = 2;
         ctx.setLineDash([]);
         labelDataSet?.forEach(({ x0, y0, x1, y1 }) => {
-            ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+          ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
         });
-        // Animate only the selected bounding box
+        
         ctx.strokeStyle = "blue";
         ctx.lineWidth = 3;
         ctx.setLineDash([6, 6]);
         ctx.lineDashOffset = -dashPhase;
-        const { x0, y0, x1, y1 } = selectedLabelBox!;
-        ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+
+        selectLabelBoxes?.forEach(({ x0, y0, x1, y1 }) => {
+          ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+        });
       };
     }
 
-    dashPhase = (dashPhase + dashSpeed) % 12; // Creates smooth animation loop
-    animationFrameId = requestAnimationFrame(() => animateDashedRectangle(ctx));
+    dashPhase = (dashPhase + dashSpeed) % 12;
+    animationFrameId = requestAnimationFrame(() => animateDashedRectangles(ctx));
   }
 
   function stopAnimation() {
@@ -119,26 +115,21 @@
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
 
-    let clickedRect = null;
-    for (const eachLabel of labelDataSet) {
-      const { x0, y0, x1, y1 } = eachLabel;
-      if (clickX >= x0 && clickX <= x1 && clickY >= y0 && clickY <= y1) {
-          clickedRect = eachLabel;
-          break;
-      }
-    }
+    let clickedRects = labelDataSet.filter(({ x0, y0, x1, y1 }) =>
+      clickX >= x0 && clickX <= x1 && clickY >= y0 && clickY <= y1
+    );
 
-    if (clickedRect) {
-      selectedLabelBox = clickedRect;
+    if (clickedRects.length > 0) {
+      selectLabelBoxes = clickedRects;
       stopAnimation();
       const ctx = canvas.getContext("2d");
-      if (ctx) animateDashedRectangle(ctx);
-      onLabelBoxClick && onLabelBoxClick(clickedRect);
+      if (ctx) animateDashedRectangles(ctx);
+      onLabelBoxClick && onLabelBoxClick(clickedRects[0]);
     } else {
-      selectedLabelBox = null;
+      selectLabelBoxes = [];
       stopAnimation();
       const ctx = canvas.getContext("2d");
-      if (ctx) drawRectangles(ctx); // Redraw without animation
+      if (ctx) drawRectangles(ctx);
     }
   }
 
@@ -155,13 +146,13 @@
   });
 
   $effect(() => {
-    if (selectedLabelBox) {
+    if (selectLabelBoxes && selectLabelBoxes.length > 0) {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
       const ctx = canvas?.getContext("2d");
       if (ctx) {
-        animateDashedRectangle(ctx);
+        animateDashedRectangles(ctx);
       }
     }
   });

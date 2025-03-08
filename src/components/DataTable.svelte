@@ -1,24 +1,28 @@
 <script lang="ts">
   interface IDataTableProps {
-    labelDataSet?: { x0: number, y0: number, x1: number, y1: number }[] | null;
-    selectedLabelBox?: { x0: number, y0: number, x1: number, y1: number } | null;
-    onRowSelect?: (label: { x0: number, y0: number, x1: number, y1: number }) => void;
+    recordsDataSet?: { mappingKey: string, column1: string, column2: string }[] | null;
+    selectedMappingKey?: string | null;
+    onRowSelect?: ((mappingKey: string) => void) | null;
   }
 
-  let { labelDataSet = null, selectedLabelBox = null, onRowSelect}: IDataTableProps = $props();
+  let { recordsDataSet = null, selectedMappingKey = null, onRowSelect}: IDataTableProps = $props();
+  let selectedRowKey = $state<string | null>(selectedMappingKey);
 
-  // Auto-scroll to the selected row when selectedRect changes
+  function handleRowClick(mappingKey: string) {
+    selectedRowKey = mappingKey;
+    onRowSelect?.(mappingKey);
+  }
+
+  // Auto-scroll to selected row
   $effect(() => {
-    if (!selectedLabelBox) return;
-    const row = document.querySelector(
-      `[data-x0="${selectedLabelBox.x0}"][data-y0="${selectedLabelBox.y0}"][data-x1="${selectedLabelBox.x1}"][data-y1="${selectedLabelBox.y1}"]`
-    );
-
-    if (row) {
-      row.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
+    if (!selectedRowKey) return;
+    const row = document.querySelector(`[data-mappingKey="${selectedRowKey}"]`);
+    row?.scrollIntoView({ behavior: "smooth", block: "center" });
   });
 
+  $effect(() => {
+    selectedRowKey = selectedMappingKey;
+  });
 </script>
 
 <style>
@@ -40,7 +44,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    background-color: light-dark(rgb(255, 255, 255),#555);
+    background-color: light-dark(rgb(255, 255, 255), #555);
   }
 
   th, td {
@@ -50,7 +54,7 @@
   }
 
   th {
-    background-color: light-dark(rgb(255, 255, 255),#242424);
+    background-color: light-dark(rgb(255, 255, 255), #242424);
   }
 
   thead {
@@ -69,27 +73,27 @@
 </style>
 
 <div class="table-container">
-  {#if labelDataSet && labelDataSet.length > 0}
-  <table>
-    <thead>
-      <tr>
-        <th>(x0, y0)</th>
-        <th>(x1, y1)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each labelDataSet as { x0, y0, x1, y1 }}
-        <tr 
-          data-x0={x0} data-y0={y0} data-x1={x1} data-y1={y1}
-          class:selected={selectedLabelBox && selectedLabelBox.x0 === x0 && selectedLabelBox.y0 === y0 && selectedLabelBox.x1 === x1 && selectedLabelBox.y1 === y1}
-          onclick={() => onRowSelect && onRowSelect({ x0, y0, x1, y1 })}
-        >
-          <td>({x0}, {y0})</td>
-          <td>({x1}, {y1})</td>
+  {#if recordsDataSet && recordsDataSet.length > 0}
+    <table>
+      <thead>
+        <tr>
+          <th>Column 1</th>
+          <th>Column 2</th>
         </tr>
-      {/each}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {#each recordsDataSet as { mappingKey, column1, column2 }}
+          <tr 
+            data-mappingKey={mappingKey}
+            class:selected={selectedRowKey === mappingKey}
+            onclick={() => handleRowClick(mappingKey)}
+          >
+            <td>{column1}</td>
+            <td>{column2}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
   {:else}
     <p class="no-data-message">No data available</p>
   {/if}
