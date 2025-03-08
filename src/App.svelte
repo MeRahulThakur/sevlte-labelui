@@ -3,8 +3,9 @@
   import ImageContainer from './components/ImageContainer.svelte';
   import DataTable from './components/DataTable.svelte';
   import Footer from './UI/Footer.svelte';
+  import DataTableAg from './components/DataTableAG.svelte';
 
-  const predefinedKeys = ["A", "B", "C", "D", "E"]; // Example predefined set of keys
+  const predefinedKeys = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]; // Example predefined set of keys
 
   const state = $state({
     imageSrc: null as string | null,
@@ -132,11 +133,18 @@
    --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)"
   />
   <!-- {--dynamic-height="calc(100dvh - 4.5rem - 4.5rem)" } -->
-  <DataTable
+  <!-- <DataTable
    recordsDataSet={state.recordsDataSet} 
    selectedMappingKey={state.selectedMappingKey}
    onRowSelect={handleRowSelect}
    --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)"
+  /> -->
+
+  <DataTableAg
+    recordsDataSet={state.recordsDataSet} 
+    selectedMappingKey={state.selectedMappingKey}
+    onRowSelect={handleRowSelect}
+    --dynamic-height="calc(100dvh - 4.5rem - 4.5rem)"
   />
 </main>
 

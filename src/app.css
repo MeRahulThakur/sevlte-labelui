@@ -25,3 +25,7 @@ body {
   flex-direction: column;
   height: 100vh;
 }
+
+.hide-headers .ag-header {
+  display: none !important;
+}
