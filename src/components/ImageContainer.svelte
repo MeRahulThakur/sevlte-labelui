@@ -94,8 +94,12 @@
   function handleCanvasClick(event: MouseEvent) {
     if (!canvas || !labelDataSet) return;
     const rect = canvas.getBoundingClientRect();
-    const clickX = event.clientX - rect.left;
-    const clickY = event.clientY - rect.top;
+    const scaleX = canvas.width / rect.width; // Scale factor for X
+    const scaleY = canvas.height / rect.height; // Scale factor for Y
+
+    // Convert mouse coordinates to match canvas scaling
+    const clickX = (event.clientX - rect.left) * scaleX;
+    const clickY = (event.clientY - rect.top) * scaleY;
 
     let clickedRects = labelDataSet.filter(({ x0, y0, x1, y1 }) =>
       clickX >= x0 && clickX <= x1 && clickY >= y0 && clickY <= y1
