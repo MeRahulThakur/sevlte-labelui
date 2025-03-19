@@ -140,6 +140,16 @@
     }
   }
 
+  function toggleFullScreen() {
+    if (wrapper) {
+      if (!document.fullscreenElement) {
+        wrapper.requestFullscreen().catch(err => console.error("Error attempting to enable full-screen mode:", err));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  }
+
   onMount(() => {
     initializeZoom();
     if (labelDataSet) {
@@ -214,5 +224,6 @@
     <button onclick={zoomIn}>+</button>
     <button onclick={zoomOut}>-</button>
     <button onclick={resetView}>Reset</button>
+    <button onclick={toggleFullScreen}>Full Screen</button>
   </div>
 </div>
