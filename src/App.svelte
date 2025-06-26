@@ -16,6 +16,8 @@
     selectedMappingKey: null as string | null,
   });
 
+  let imageContainerRef: any = null;
+
   function previewImage(event: Event) {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
@@ -91,8 +93,21 @@
 
   function handleRowSelect(mappingKey: string) {
     console.log('Selected Row mapping key:', mappingKey);
-    state.selectedLabelBoxes = state.labelDataSet.filter(labelData => labelData.mappingKey === mappingKey); // Select corresponding bounding boxes
-    console.log(state.selectedLabelBoxes)
+    const matchedBoxes = state.labelDataSet.filter(label => label.mappingKey === mappingKey);
+    state.selectedLabelBoxes = matchedBoxes;
+    console.log('matchedBoxes-',matchedBoxes)
+
+    if (matchedBoxes.length && imageContainerRef?.zoomToBox) {
+      const allX = matchedBoxes.flatMap(({ x0, x1 }) => [x0, x1]);
+      const allY = matchedBoxes.flatMap(({ y0, y1 }) => [y0, y1]);
+
+      const minX = Math.min(...allX);
+      const maxX = Math.max(...allX);
+      const minY = Math.min(...allY);
+      const maxY = Math.max(...allY);
+
+      imageContainerRef.zoomToBox(minX, minY, maxX, maxY);
+    }
   }
 </script>
 
@@ -126,6 +141,7 @@
 
 <main class="main">
   <ImageContainer
+    bind:this={imageContainerRef}
    imageSrc={state.imageSrc}
    labelDataSet={state.labelDataSet.length > 0 ? state.labelDataSet : null}
    onLabelBoxClick={handleLabelBoxClick}

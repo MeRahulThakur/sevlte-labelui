@@ -33,7 +33,7 @@
   const dashSpeed = 0.5;
   let firstRenderDone = false;
   let animationFrameId: number | null = null;
-  let panzoomInstance: PanzoomObject | null = null;
+  let panzoomInstance = $state<PanzoomObject | null>(null);
 
   function drawImageWithRectangles(
     ctx: CanvasRenderingContext2D,
@@ -105,6 +105,7 @@
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
       drawImageWithRectangles(ctx);
+      initializeZoom();
     };
   }
 
@@ -162,7 +163,7 @@
   }
 
   function enforcePanBounds(e: PointerEvent) {
-    console.log('inside enforcePanBounds')
+    console.log("inside enforcePanBounds");
     if (!panzoomInstance || !wrapper) return;
 
     const container = wrapper.parentElement;
@@ -184,13 +185,13 @@
 
     const visibleRatio = visibleArea / totalArea;
 
-    if (visibleRatio < 0.5) { console.log('stop panning',visibleRatio)
+    if (visibleRatio <= 0) {
+      console.log("stop panning", visibleRatio);
       // Prevent further panning
       //e.preventDefault();
       //e.stopPropagation();
 
       panzoomInstance.reset();
-      
     }
   }
 
@@ -229,26 +230,9 @@
   }
 
   onMount(() => {
-    //initializeZoom();
     if (labelDataSet) {
       renderImage();
     }
-
-    requestAnimationFrame(() => {
-      initializeZoom();
-
-      // Fit image inside container
-      const container = wrapper?.getBoundingClientRect();
-      const content = canvas?.getBoundingClientRect();
-      if (container && content) {
-        const scaleX = container.width / content.width;
-        const scaleY = container.height / content.height;
-        const initialScale = Math.min(scaleX, scaleY, 1); // Don't zoom in, only fit
-
-        panzoomInstance?.zoom(initialScale, { animate: false });
-        panzoomInstance?.pan(0, 0);
-      }
-    });
   });
 
   onDestroy(() => {
@@ -275,6 +259,40 @@
       }
     }
   });
+
+  /** Zooms/pans the view to show the bounding box */
+  export function zoomToBox(x0: number, y0: number, x1: number, y1: number) {
+    console.log("Zoom to Bounding Box", x0, y0, x1, y1);
+    panzoomInstance?.reset();
+    if (!wrapper || !panzoomInstance) return;
+
+    const container = wrapper.parentElement;
+    if (!container) return;
+    const ctr = container.getBoundingClientRect();
+
+    const boxW = x1 - x0;
+    const boxH = y1 - y0;
+    const opts = panzoomInstance.getOptions();
+    const scale = Math.min(
+      ctr.width / boxW,
+      ctr.height / boxH,
+      opts.maxScale || Infinity,
+    );
+
+    const centerX = (x0 + x1) / 2;
+    const centerY = (y0 + y1) / 2;
+
+    // Perform zoom centered on box center
+    panzoomInstance.zoom(scale, {
+      animate: true,
+      focal: { x: centerX, y: centerY },
+    });
+
+    // Pan such that box center aligns with container center
+    const panX = ctr.width / 2 - centerX * scale;
+    const panY = ctr.height / 2 - centerY * scale;
+    panzoomInstance.pan(panX, panY);
+  }
 </script>
 
 <div class="image-container">
@@ -291,12 +309,14 @@
       Image Preview Area
     {/if}
   </div>
-  <div class="controls">
-    <button onclick={zoomIn}>+</button>
-    <button onclick={zoomOut}>-</button>
-    <button onclick={resetView}>Reset</button>
-    <button onclick={toggleFullScreen}>Full Screen</button>
-  </div>
+  {#if panzoomInstance}
+    <div class="controls">
+      <button onclick={zoomIn}>+</button>
+      <button onclick={zoomOut}>-</button>
+      <button onclick={resetView}>Reset</button>
+      <button onclick={toggleFullScreen}>Full Screen</button>
+    </div>
+  {/if}
 </div>
 
 <style>
